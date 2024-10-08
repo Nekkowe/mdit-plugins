@@ -17,7 +17,7 @@ const tokenize: RuleInline = (state, silent) => {
   const start = state.pos;
   const marker = state.src.charAt(start);
 
-  if (silent || marker !== "!") return false;
+  if (silent || marker !== "|") return false;
 
   const scanned = state.scanDelims(state.pos, true);
   let { length } = scanned;
@@ -38,7 +38,7 @@ const tokenize: RuleInline = (state, silent) => {
 
     if (scanned.can_open || scanned.can_close)
       state.delimiters.push({
-        marker: 0x21,
+        marker: 0x7c,
         length: 0, // disable "rule of 3" length checks meant for emphasis
         token: state.tokens.length - 1,
         end: -1,
@@ -68,14 +68,14 @@ const postProcess = (
   for (let i = 0; i < max; i++) {
     const startDelim = delimiters[i];
 
-    if (startDelim.marker === 0x21 /* ! */ && startDelim.end !== -1) {
+    if (startDelim.marker === 0x7c /* | */ && startDelim.end !== -1) {
       const endDelim = delimiters[startDelim.end];
 
       token = state.tokens[startDelim.token];
       token.type = "spoiler_open";
       token.tag = tag;
       token.nesting = 1;
-      token.markup = "!!";
+      token.markup = "||";
       token.attrs = attrs;
       token.content = "";
 
@@ -83,12 +83,12 @@ const postProcess = (
       token.type = "spoiler_close";
       token.tag = tag;
       token.nesting = -1;
-      token.markup = "!!";
+      token.markup = "||";
       token.content = "";
 
       if (
         state.tokens[endDelim.token - 1].type === "text" &&
-        state.tokens[endDelim.token - 1].content === "!"
+        state.tokens[endDelim.token - 1].content === "|"
       )
         loneMarkers.push(endDelim.token - 1);
     }
